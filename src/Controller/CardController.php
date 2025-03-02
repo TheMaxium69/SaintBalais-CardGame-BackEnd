@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Card;
 use App\Entity\OpainedCard;
+use App\Entity\OpenBooster;
 use App\Entity\User;
 use App\Repository\CardRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -112,21 +113,42 @@ final class CardController extends AbstractController
             }
 
 
-
             /* Verifier si je peut ouvrir un booster */
-
-            /* renvoyé 6 carte donc au moin une antagoniste */
-
-            /* et gerez les probabilité */
+            if($this->canOpenBooster($user->getId())){
 
 
+                /* GESTION BDD*/
+                    $ip = $request->getClientIp();
+                    if (!isset($ip)) {
+                        $newIp = "0.0.0.0";
+                    } else {
+                        $newIp = $ip;
+                    }
+                    $booster = new OpenBooster();
+                    $booster->setUserId($user);
+                    $booster->setOpenAt(new \DateTimeImmutable());
+                    $booster->setIp($newIp);
+                    $this->entityManager->persist($booster);
+                    $this->entityManager->flush();
+                /* GESTION BDD*/
+
+
+
+                /* renvoyé 6 carte donc au moin une antagoniste */
+
+                /* et gerez les probabilité */
 
 
 
 
+                return $this->json(['message' => 'good', 'result' => []], 200, [], ['groups' => 'card:read']);
 
 
+            } else {
 
+                return $this->json(['message' => 'Vous ne pouvez pas ouvrir un booster']);
+
+            }
 
 
         }
@@ -171,4 +193,31 @@ final class CardController extends AbstractController
 
 
     }
+
+
+
+
+
+
+
+    function canOpenBooster($userId)
+    {
+
+
+
+        return true;
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
 }
