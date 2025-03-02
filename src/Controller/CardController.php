@@ -95,19 +95,80 @@ final class CardController extends AbstractController
         return $this->json(['message' => 'Token invalide']);
     }
     
-    #[Route('/openBooster', name: 'open_booster')]
-    public function openBooster(): Response
+    #[Route('/openBooster', name: 'open_booster', methods: ['GET'])]
+    public function openBooster(Request $request): Response
     {
-        return $this->render('card/index.html.twig', [
-            'controller_name' => 'CardController',
-        ]);
+
+        $authorizationHeader = $request->headers->get('Authorization');
+
+        /*SI LE TOKEN EST REMPLIE */
+        if (strpos($authorizationHeader, 'Bearer ') === 0) {
+            $token = substr($authorizationHeader, 7);
+
+            /*SI LE TOKEN A BIEN UN UTILISATEUR EXITANT */
+            $user = $this->entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+            if (!$user) {
+                return $this->json(['message' => 'token is failed']);
+            }
+
+
+
+            /* Verifier si je peut ouvrir un booster */
+
+            /* renvoyé 6 carte donc au moin une antagoniste */
+
+            /* et gerez les probabilité */
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+        return $this->json(['message' => 'Token invalide']);
+
+
     }
 
     #[Route('/getTimeOpenBooster', name: 'get_time_open_booster')]
     public function getTimeOpenBooster(): Response
     {
-        return $this->render('card/index.html.twig', [
-            'controller_name' => 'CardController',
-        ]);
+        $authorizationHeader = $request->headers->get('Authorization');
+
+        /*SI LE TOKEN EST REMPLIE */
+        if (strpos($authorizationHeader, 'Bearer ') === 0) {
+            $token = substr($authorizationHeader, 7);
+
+            /*SI LE TOKEN A BIEN UN UTILISATEUR EXITANT */
+            $user = $this->entityManager->getRepository(User::class)->findOneBy(['token' => $token]);
+            if (!$user) {
+                return $this->json(['message' => 'token is failed']);
+            }
+
+
+
+            /* Verifier si je peut ouvrir un booster */
+
+
+            /* renvoyé si le temps si je ne peut pas */
+
+
+
+
+
+
+
+
+        }
+
+        return $this->json(['message' => 'Token invalide']);
+
+
     }
 }
