@@ -241,8 +241,8 @@ final class CardController extends AbstractController
 
     }
 
-    #[Route('/getTimeOpenBooster', name: 'get_time_open_booster')]
-    public function getTimeOpenBooster(Request $request): Response
+    #[Route('/getNavbar', name: 'get_time_open_booster')]
+    public function getNavbar(Request $request): Response
     {
         $authorizationHeader = $request->headers->get('Authorization');
 
@@ -256,19 +256,26 @@ final class CardController extends AbstractController
                 return $this->json(['message' => 'token is failed']);
             }
 
+            /* Nombre de carte*/
+            $nbCard = $this->entityManager->getRepository(OpainedCard::class)->count(['user' => $user]);
 
 
             /* Verifier si je peut ouvrir un booster */
+            $isSpam = $this->canOpenBooster($user);
+            if($isSpam === false){
+                $time = 0;
+            } else {
+                /* renvoyé si le temps si je ne peut pas */
+
+                $time = 600;
+            }
 
 
-            /* renvoyé si le temps si je ne peut pas */
 
-
-
-
-
-
-
+            return $this->json(['message' => 'good', 'result' => [
+                'time' => $time,
+                'nbCard'=> $nbCard,
+            ]], 200, [], ['groups' => 'card:read']);
 
         }
 
