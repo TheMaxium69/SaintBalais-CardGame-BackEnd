@@ -28,6 +28,9 @@ class OpainedCard
     #[ORM\JoinColumn(nullable: false)]
     private ?Card $card = null;
 
+    #[ORM\ManyToOne]
+    private ?openbooster $booster = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -77,6 +80,18 @@ class OpainedCard
     public function setCard(?Card $card): static
     {
         $this->card = $card;
+
+        return $this;
+    }
+
+    public function getBooster(): ?openbooster
+    {
+        return $this->booster;
+    }
+
+    public function setBooster(?openbooster $booster): static
+    {
+        $this->booster = $booster;
 
         return $this;
     }

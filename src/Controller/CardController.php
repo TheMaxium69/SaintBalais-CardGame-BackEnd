@@ -118,33 +118,113 @@ final class CardController extends AbstractController
             $isSpam = $this->canOpenBooster($user);
             if($isSpam === false){
 
-
-                /* GESTION BDD*/
-                    $ip = $request->getClientIp();
-                    if (!isset($ip)) {
-                        $newIp = "0.0.0.0";
-                    } else {
-                        $newIp = $ip;
-                    }
-                    $booster = new OpenBooster();
-                    $booster->setUserId($user);
-                    $booster->setOpenAt(new \DateTimeImmutable());
-                    $booster->setIp($newIp);
-                    $this->entityManager->persist($booster);
-                    $this->entityManager->flush();
-                /* GESTION BDD*/
-
-
+                $ip = $request->getClientIp();
+                if (!isset($ip)) {
+                    $newIp = "0.0.0.0";
+                } else {
+                    $newIp = $ip;
+                }
 
                 /* renvoyé 6 carte donc au moin une antagoniste */
-                
 
-                /* et gerez les probabilité */
+                $allCards = $this->cardRepository->findAll();
+
+                // Shuffle cards to ensure randomness
+                shuffle($allCards);
+
+                $selectedCards = [];
+
+                /* TYPE */
+                $antagonistCardCount = 0;
+
+                /* RARE */
+                $communCardCount = 0;
+                $rareCardCount = 0;
+                $legendCardCount = 0;
+                $mythiqueCardCount = 0;
+
+                foreach ($allCards as $card) {
+                    if (count($selectedCards) < 6) {
+
+                        if (
+
+                            ($card->getRarity() === 3 && $mythiqueCardCount == 0 && $legendCardCount == 0) ||
+                            ($card->getRarity() === 2 && $mythiqueCardCount == 0 && $legendCardCount == 0) ||
+                            ($card->getRarity() === 1 && $rareCardCount < 3) ||
+                            $card->getRarity() === 0
+
+                        ) {
+
+                            $selectedCards[] = $card;
+
+                            if ($card->getType() === 0) {
+                                $antagonistCardCount++;
+                            }
+
+                            if ($card->getRarity() === 0) {
+                                $communCardCount++;
+                            } else if ($card->getRarity() === 1) {
+                                $rareCardCount++;
+                            } else if ($card->getRarity() === 2) {
+                                $legendCardCount++;
+                            } else if ($card->getRarity() === 3) {
+                                $mythiqueCardCount++;
+                            }
+                        }
+
+                    }
+
+                    if (count($selectedCards) === 6) {
+                        break;
+                    }
+                }
+
+                if ($antagonistCardCount === 0) {
+                    foreach ($allCards as $card) {
+                        if (
+                            (
+                                ($card->getRarity() === 3 && $mythiqueCardCount == 0 && $legendCardCount == 0) ||
+                                ($card->getRarity() === 2 && $mythiqueCardCount == 0 && $legendCardCount == 0) ||
+                                ($card->getRarity() === 1 && $rareCardCount < 3)
+                            ) && $card->getType() === 0
+                        ) {
+                            $selectedCards[5] = $card;
+                            break;
+                        }
+                    }
+                }
+
+                /* Trie */
+                usort($selectedCards, function ($a, $b) {
+                    return $a->getRarity() <=> $b->getRarity();
+                });
+
+                /* GESTION BDD*/
+                $booster = new OpenBooster();
+                $booster->setUser($user);
+                $booster->setOpenAt(new \DateTimeImmutable());
+                $booster->setIp($newIp);
+                $this->entityManager->persist($booster);
+                $this->entityManager->flush();
+                /* GESTION BDD*/
 
 
+                /* Adding Card */
+                foreach ($selectedCards as $card) {
+
+                    $opainedCard = new OpainedCard();
+                    $opainedCard->setCard($card);
+                    $opainedCard->setUser($user);
+                    $opainedCard->setIp($newIp);
+                    $opainedCard->setAddedAt(new \DateTimeImmutable());
+                    $opainedCard->setBooster($booster);
+                    $this->entityManager->persist($opainedCard);
+                    $this->entityManager->flush();
+
+                }
 
 
-                return $this->json(['message' => 'good', 'result' => []], 200, [], ['groups' => 'card:read']);
+                return $this->json(['message' => 'good', 'result' => $selectedCards], 200, [], ['groups' => 'card:read']);
 
 
             } else {
@@ -162,7 +242,7 @@ final class CardController extends AbstractController
     }
 
     #[Route('/getTimeOpenBooster', name: 'get_time_open_booster')]
-    public function getTimeOpenBooster(): Response
+    public function getTimeOpenBooster(Request $request): Response
     {
         $authorizationHeader = $request->headers->get('Authorization');
 

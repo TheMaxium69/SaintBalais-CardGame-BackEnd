@@ -20,7 +20,7 @@ class OpenBoosterRepository extends ServiceEntityRepository
 
 
         $result = $this->createQueryBuilder('ob')
-            ->andWhere('ob.user_id = :user')
+            ->andWhere('ob.user = :user')
             ->setParameter('user', $user)
             ->orderBy('ob.open_at', 'DESC')
             ->setMaxResults(2)
