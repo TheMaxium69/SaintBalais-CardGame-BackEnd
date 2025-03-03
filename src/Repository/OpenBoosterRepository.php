@@ -16,6 +16,23 @@ class OpenBoosterRepository extends ServiceEntityRepository
         parent::__construct($registry, OpenBooster::class);
     }
 
+    public function findTwoLatestBoosterByUser($user){
+
+
+        $result = $this->createQueryBuilder('ob')
+            ->andWhere('ob.user_id = :user')
+            ->setParameter('user', $user)
+            ->orderBy('ob.open_at', 'DESC')
+            ->setMaxResults(2)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+
+    }
+
+
+
     //    /**
     //     * @return OpenBooster[] Returns an array of OpenBooster objects
     //     */

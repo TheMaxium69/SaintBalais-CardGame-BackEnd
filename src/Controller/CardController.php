@@ -114,7 +114,9 @@ final class CardController extends AbstractController
 
 
             /* Verifier si je peut ouvrir un booster */
-            if($this->canOpenBooster($user->getId())){
+//            $isSpam = false;
+            $isSpam = $this->canOpenBooster($user);
+            if($isSpam === false){
 
 
                 /* GESTION BDD*/
@@ -135,6 +137,7 @@ final class CardController extends AbstractController
 
 
                 /* renvoyé 6 carte donc au moin une antagoniste */
+                
 
                 /* et gerez les probabilité */
 
@@ -200,15 +203,65 @@ final class CardController extends AbstractController
 
 
 
-    function canOpenBooster($userId)
+    function canOpenBooster($user)
     {
 
+        $userIsLock = true;
+        if ($user !== null) {
 
+            $twoLatestBooster = $this->entityManager->getRepository(OpenBooster::class)->findTwoLatestBoosterByUser($user);
+
+//            var_dump($twoLatestBooster);
+
+            if ($twoLatestBooster !== null && count($twoLatestBooster) > 1) {
+
+                $booster1 = false;
+                $booster2 = false;
+
+                $i = 0;
+                foreach ($twoLatestBooster as $booster) {
+                    $i++;
+
+                    if ($booster && $booster->getOpenAt() && $booster->getOpenAt() >= (new \DateTimeImmutable())->sub(new \DateInterval('PT12H'))) {
+
+                        /* LOCK - booster dans les 12 dernier heure */
+                        if ($i === 1) {
+                            $booster1 = false;
+                        } else if ($i === 2) {
+                            $booster2 = false;
+                        }
+
+                    } else {
+
+                        /* BOOSTER DISPO + PLUS DE 12 HEURE */
+                        if ($i === 1) {
+                            $booster1 = true;
+                        } else if ($i === 2) {
+                            $booster2 = true;
+                        }
+                    }
+
+                }
+
+                /* AUCUN DES DEUX BOOSTER DANS LES 12 HEURES*/
+                if ($booster1 || $booster2) {
+                    $userIsLock = false;
+                }
+
+            } else {
+                $userIsLock = false; /* notLock - aucun booster ou moin d'un 1 */
+            }
+
+        } else {
+            $userIsLock = false;
+        }
+
+
+        if (!$userIsLock) {
+            return false;
+        }
 
         return true;
-
-
-
 
     }
 
