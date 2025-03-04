@@ -266,8 +266,24 @@ final class CardController extends AbstractController
                 $time = 0;
             } else {
                 /* renvoyé si le temps si je ne peut pas */
+                $twoLatestBooster = $this->entityManager->getRepository(OpenBooster::class)->findTwoLatestBoosterByUser($user);
 
-                $time = 600;
+                /* Recupere le premier */
+                $firstBooster = $twoLatestBooster[0] ?? null;
+                $secondBooster = $twoLatestBooster[1] ?? null;
+                $now = new \DateTimeImmutable();
+
+                if ($secondBooster && $secondBooster->getOpenAt()) {
+
+                    $time = $secondBooster->getOpenAt()->add(new \DateInterval('PT12H'))->getTimestamp() - $now->getTimestamp();
+
+                } else if ($firstBooster && $firstBooster->getOpenAt()) {
+
+                    $time = $firstBooster->getOpenAt()->add(new \DateInterval('PT12H'))->getTimestamp() - $now->getTimestamp();
+
+                } else {
+                    $time = 0; // Par défaut
+                }
             }
 
 
