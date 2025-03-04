@@ -54,7 +54,7 @@ final class UserController extends AbstractController
 
         $client = HttpClient::create();
 
-        $url = 'https://useritium.fr/api-externe/index.php?controller=gamenium&task=connect';
+        $url = 'https://useritium.fr/api-externe/index.php?controller=other&task=connect';
 
         $body = [
             'email_useritium' => $emailForm,
@@ -100,6 +100,7 @@ final class UserController extends AbstractController
                     $ip = $user->getIp();
                     array_push($ip, $newIp);
                 $user->setIp($ip);
+                $user->setPp($resultUseritiumArray['result']['pp']);
 
                 $this->manager->persist($user);
                 $this->manager->flush();
@@ -121,6 +122,7 @@ final class UserController extends AbstractController
                 $user->setEmail($resultUseritiumArray['result']['email']);
                 $user->setDisplaynameUseritium($resultUseritiumArray['result']['displayName']);
                 $user->setUsername($resultUseritiumArray['result']['username']);
+                $user->setPp($resultUseritiumArray['result']['pp']);
                 if ($resultUseritiumArray['result']['displayName']){
                     $user->setDisplayname($resultUseritiumArray['result']['displayName']);
                 } else {
@@ -176,6 +178,7 @@ final class UserController extends AbstractController
                     "displaynameUseritium" => $user->getDisplaynameUseritium(),
                     "joinAt" => $user->getJoinAt(),
                     "userRole" => $user->getRoles(),
+                    "pp" => $user->getPp(),
                 ]]);
 
             } else {

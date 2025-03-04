@@ -50,6 +50,9 @@ class User implements UserInterface
     #[ORM\Column(type: Types::TEXT)]
     private ?string $token = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $pp = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -202,6 +205,18 @@ class User implements UserInterface
     public function setDisplaynameUseritium(?string $displayname_useritium): static
     {
         $this->displayname_useritium = $displayname_useritium;
+
+        return $this;
+    }
+
+    public function getPp(): ?string
+    {
+        return $this->pp;
+    }
+
+    public function setPp(?string $pp): static
+    {
+        $this->pp = $pp;
 
         return $this;
     }
